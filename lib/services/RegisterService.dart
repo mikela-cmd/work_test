@@ -29,11 +29,12 @@ class Registerservice {
       
       return "ok";
     } on FirebaseAuthException catch (e) {
+      print(e);
       if (e.code == 'weak-password') {
         print('The password provided is too weak.');
-        return "error password";
+        return "week password";
       } else if (e.code == 'email-already-in-use') {
-        return "login";
+        return "email exist";
       } else {
         return "error: ${e.code}";
       }
@@ -49,15 +50,18 @@ class Registerservice {
       return "ok";
     } on FirebaseAuthException catch (e) {
       print("Ошибка входа: ${e.code} - ${e.message}");
+      print(e.code);
+      
       
       // Можно возвращать разные коды ошибок
       if (e.code == 'user-not-found' || e.code == 'wrong-password') {
-        return "invalid_credentials";
+        return "invalid_password";
       } else if (e.code == 'too-many-requests') {
         return "too_many_attempts";
       } else {
         return "error";
       }
+      
     } catch (e) {
       print("Неизвестная ошибка входа: $e");
       return "error";

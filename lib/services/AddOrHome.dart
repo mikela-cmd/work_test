@@ -20,7 +20,7 @@ class _AddOrHomeState extends State<AddOrHome> {
       final user = auth.currentUser;
       if (user == null || user.email == null) return null;
       
-      return await db.collection("users").doc(user.email).get();
+      return await db.collection("users").doc(auth.currentUser!.uid).get();
     } catch (e) {
       print('Ошибка получения данных пользователя: $e');
       return null;
@@ -32,33 +32,45 @@ class _AddOrHomeState extends State<AddOrHome> {
     return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>?>(
       future: getUserInfo(),
       builder: (context, snapshot) {
+        // Пока загрузка
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
         
+        // Если ошибка
         if (snapshot.hasError) {
-          return const Scaffold(
-            body: Center(child: Text('Ошибка загрузки данных')),
+          return Scaffold(
+            body: Center(
+              child: Text('Ошибка загрузки данных: ${snapshot.error}'),
+            ),
           );
         }
         
-        // Проверяем наличие данных
-        
-        
-        final userData = snapshot.data!.data();
-        print(userData);
-        
-        // Проверяем, что данные не null и содержат нужные поля
-        if (userData == null || 
-            userData['name'] == null || 
-            userData['name'].toString().isEmpty ||
-            userData['imageUrl'] == null || 
-            userData['imageUrl'].toString().isEmpty) {
-          return AddInfoPage();
+        // Если данные null или документ не существует
+        if (snapshot.data == null || !snapshot.data!.exists) {
+          return const AddInfoPage();
         }
         
+        // Получаем данные документа
+        final userData = snapshot.data!.data();
+        
+        // Если данные null или отсутствуют нужные поля
+        if (userData!['imageUrl'] == null || 
+            userData['name'] == null) {
+          return const AddInfoPage();
+        }
+        
+        // Проверка через containsKey (альтернативный вариант)
+        // if (!userData.containsKey("imageUrl") || 
+        //     !userData.containsKey("name") ||
+        //     userData["imageUrl"] == null || 
+        //     userData["name"] == null) {
+        //   return const AddInfoPage();
+        // }
+        
+        // Все данные есть, показываем главную страницу
         return const MainApp();
       },
     );
