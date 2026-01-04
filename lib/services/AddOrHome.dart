@@ -17,8 +17,7 @@ class _AddOrHomeState extends State<AddOrHome> {
 
   Future<DocumentSnapshot<Map<String, dynamic>>?> getUserInfo() async {
     try {
-      final user = auth.currentUser;
-      if (user == null || user.email == null) return null;
+      
       
       return await db.collection("users").doc(auth.currentUser!.uid).get();
     } catch (e) {
@@ -57,8 +56,8 @@ class _AddOrHomeState extends State<AddOrHome> {
         final userData = snapshot.data!.data();
         
         // Если данные null или отсутствуют нужные поля
-        if (userData!['imageUrl'] == null || 
-            userData['name'] == null) {
+        if (!userData!.containsKey('imageUrl') || 
+            !userData.containsKey('name')) {
           return const AddInfoPage();
         }
         
